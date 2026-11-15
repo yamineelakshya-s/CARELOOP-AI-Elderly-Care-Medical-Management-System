@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareLoop AI | Connected Care</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/css/style.css?v=ui-ux-1">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="layout">
+<aside class="sidebar">
+<div class="brand"><span class="brand-icon" aria-hidden="true">+</span><div><h1>CareLoop <span>AI</span></h1><small>Connected care, together</small></div></div>
+<div class="profile" data-role="{{ current_user.role }}" data-is-demo="{{ 'true' if current_user.is_demo else 'false' }}">
+<div class="avatar" id="profile-avatar">{{ current_user.name[0]|upper }}</div>
+<div class="profile-details"><strong id="profile-name">{{ current_user.name }}</strong><small id="profile-role">{{ current_user.role|title }} account{% if current_user.is_demo %} · Demo{% endif %}</small></div>
+<button class="logout-button" id="logout-button" type="button">Log out</button>
+</div>
+<p class="nav-title">WORKSPACE</p>
+<nav>
+<button class="nav-link active" data-view="overview">▦ Overview</button>
+<button class="nav-link" data-view="medications">✚ Medications</button>
+<button class="nav-link" data-view="appointments">▣ Appointments</button>
+<button class="nav-link" data-view="relay">↗ Caregiver Relay</button>
+<button class="nav-link" data-view="approvals">✓ Approvals</button>
+<button class="nav-link" data-view="timeline">◷ Care timeline</button>
+<button class="nav-link" data-view="ai-summary">✧ AI care summary</button>
+<button class="nav-link" data-view="notifications">♧ Notifications <span class="count" id="notification-count" hidden>0</span></button>
+</nav>
+<div class="sidebar-bottom">● Your care. Your decisions.<small>CareLoop AI · Version 1.0</small></div>
+</aside>
+<main id="main">
+<header class="topbar">
+<div><p class="eyebrow" id="current-date"></p><h2 id="page-heading">Welcome, {{ current_user.name }}</h2><p class="muted" id="page-subtitle">Your care overview.</p></div>
+<span class="demo-label" id="account-mode">{% if current_user.is_demo %}DEMO ACCOUNT{% else %}ACCOUNT{% endif %}</span>
+</header>
+<p id="dashboard-status" class="dashboard-status" role="alert" aria-live="polite" hidden></p>
+
+<section class="view active" id="overview">
+<div class="welcome"><div><small>YOUR CARE</small><h2 id="welcome-title">Your care, connected at your pace.</h2><p id="welcome-description">Loading your authorized care information…</p></div><span class="welcome-symbol">✚</span></div>
+<details class="profile-editor">
+<summary>Update your profile name</summary>
+<form id="profile-form">
+<label for="profile-name-input">Account name</label>
+<input id="profile-name-input" name="name" maxlength="100" required>
+<button class="secondary-button" type="submit">Save profile</button>
+<p id="profile-status" role="status" aria-live="polite" hidden></p>
+</form>
+</details>
+<details class="profile-editor" id="credentials-setup" hidden>
+<summary>Set up sign-in details</summary>
+<p>Invitation codes are one-time. Add an email and password so you can sign in again after logging out.</p>
+<form id="credentials-form">
+<label for="credentials-email">Email</label>
+<input id="credentials-email" type="email" maxlength="254" autocomplete="email" required>
+<label for="credentials-password">Password (at least 8 characters)</label>
+<input id="credentials-password" type="password" minlength="8" maxlength="256" autocomplete="new-password" required>
+<label for="credentials-password-confirm">Confirm password</label>
+<input id="credentials-password-confirm" type="password" minlength="8" maxlength="256" autocomplete="new-password" required>
+<button class="secondary-button" type="submit">Save sign-in details</button>
+<p id="credentials-status" role="status" aria-live="polite" hidden></p>
+</form>
+</details>
+<div class="section-title"><h3>Today's overview</h3><p class="muted">Information from your account and authorized care circles.</p></div>
+<div class="stats">
+<article class="stat"><span class="stat-icon purple">✚</span><p>Medications</p><h2 id="medication-count">—</h2><span>Authorized records</span></article>
+<article class="stat"><span class="stat-icon green">✓</span><p>Appointments</p><h2 id="appointment-count">—</h2><span>Authorized records</span></article>
+<article class="stat"><span class="stat-icon orange">▣</span><p>Care circles</p><h2 id="circle-count">—</h2><span>Linked to your account</span></article>
+<article class="stat"><span class="stat-icon blue">♡</span><p>Care activities</p><h2 id="activity-count">—</h2><span>Authorized updates</span></article>
+</div>
+<article class="panel">
+<div class="panel-head"><div><h3>Weekly medication adherence</h3><p class="muted">Calculated only from authorized dose records.</p></div></div>
+<label for="adherence-week">Choose a week</label>
+<input id="adherence-week" type="date">
+<p id="adherence-summary" class="muted" role="status" aria-live="polite">Loading dose records…</p>
+</article>
+<div class="columns">
+<article class="panel">
+<div class="panel-head"><div><h3>Medications</h3><p class="muted">Only records you are authorized to view.</p></div><button class="text-link" data-open="medications">View all →</button></div>
+<div class="record-list" id="overview-medication-list" aria-live="polite"><p class="empty-state">Loading records…</p></div>
+</article>
+<article class="panel">
+<div class="panel-head"><div><h3>Appointments</h3><p class="muted">Only records you are authorized to view.</p></div><button class="text-link" data-open="appointments">View all →</button></div>
+<div class="record-list" id="overview-appointment-list" aria-live="polite"><p class="empty-state">Loading records…</p></div>
+</article>
+</div>
+<div class="columns lower">
+<article class="panel">
+<div class="panel-head"><div><h3>Your care circles</h3><p class="muted">Elders and members linked to your account.</p></div></div>
+<div class="record-list" id="care-circle-list" aria-live="polite"><p class="empty-state">Loading care circles…</p></div>
+<div class="invite-controls" id="invite-controls" hidden>
+<button class="secondary-button" id="invite-open" type="button">Invite a care-circle member</button>
+<form id="invite-form" hidden>
+<label for="invite-name">Invitee name</label>
+<input id="invite-name" name="name" maxlength="100" required>
+<label for="invite-role">Role</label>
+<select id="invite-role" name="role"><option value="caregiver">Caregiver</option><option value="family">Family</option></select>
+<fieldset>
+<legend>Choose the information this member may access</legend>
+<label><input type="checkbox" name="permissions" value="medications"> View medications</label>
+<label><input type="checkbox" name="permissions" value="medications_manage"> Manage medications</label>
+<label><input type="checkbox" name="permissions" value="appointments"> View appointments</label>
+<label><input type="checkbox" name="permissions" value="appointments_manage"> Manage appointments</label>
+<label><input type="checkbox" name="permissions" value="activities"> View care timeline</label>
+<label><input type="checkbox" name="permissions" value="activities_manage"> Add care timeline updates</label>
+<label><input type="checkbox" name="permissions" value="relay"> View caregiver relay</label>
+<label><input type="checkbox" name="permissions" value="relay_manage"> Manage caregiver relay</label>
+<label><input type="checkbox" name="permissions" value="approvals"> Submit approval requests</label>
+</fieldset>
+<button class="primary-button" type="submit">Create invitation</button>
+<p id="invite-status" role="status" aria-live="polite" hidden></p>
+</form>
+</div>
+</article>
+<article class="panel">
+<div class="panel-head"><div><h3>Recent care activity</h3><p class="muted">Updates in circles you can access.</p></div><button class="text-link" data-open="timeline">View all →</button></div>
+<div class="record-list" id="overview-activity-list" aria-live="polite"><p class="empty-state">Loading activities…</p></div>
+</article>
+</div>
+</section>
+
+<section class="view placeholder" id="medications" hidden>
+<h3>Medications</h3>
+<article class="panel medication-panel">
+<div class="panel-head"><div><h3>Medication records</h3><p class="muted">Schedules and dose history for records you are authorized to access.</p></div><button class="primary-button" id="medication-add" type="button" hidden>Add medication</button></div>
+<form class="medication-form" id="medication-form" hidden>
+<input id="medication-edit-id" type="hidden">
+<h4 id="medication-form-title">Add medication</h4>
+<div id="medication-circle-field"><label for="medication-circle">Care circle</label><select id="medication-circle" required></select></div>
+<div class="medication-form-grid">
+<div><label for="medication-name">Medication name</label><input id="medication-name" name="name" maxlength="120" required></div>
+<div><label for="medication-dosage">Dosage</label><input id="medication-dosage" name="dosage" maxlength="100" required></div>
+<div><label for="medication-frequency">Frequency</label><input id="medication-frequency" name="frequency" maxlength="120" placeholder="For example, once daily" required></div>
+<div><label for="medication-start-date">Start date</label><input id="medication-start-date" name="start_date" type="date" required></div>
+<div><label for="medication-end-date">End date (optional)</label><input id="medication-end-date" name="end_date" type="date"></div>
+<div class="wide"><label for="medication-instructions">Instructions (optional)</label><textarea id="medication-instructions" name="instructions" maxlength="2000" rows="3"></textarea></div>
+</div>
+<div class="medication-form-actions"><button class="primary-button" id="medication-save" type="submit">Save medication</button><button class="secondary-button" id="medication-cancel" type="button">Cancel</button></div>
+<p id="medication-form-status" role="status" aria-live="polite" hidden></p>
+</form>
+<div class="record-list medication-list" id="medication-list" aria-live="polite"><p class="empty-state">Loading medication records…</p></div>
+</article>
+</section>
+<section class="view placeholder" id="appointments" hidden>
+<h3>Appointments</h3>
+<article class="panel">
+<div class="panel-head"><div><h3>Authorized appointments</h3><p class="muted">Only your account and permitted care circles are shown.</p></div><button class="primary-button" id="appointment-add" type="button" hidden>Add appointment</button></div>
+<form class="feature-form" id="appointment-form" hidden>
+<input id="appointment-edit-id" type="hidden">
+<h4 id="appointment-form-title">Add appointment</h4>
+<div id="appointment-circle-field"><label for="appointment-circle">Care circle</label><select id="appointment-circle" required></select></div>
+<label for="appointment-title">Title</label><input id="appointment-title" maxlength="200" required>
+<label for="appointment-starts">Date and time</label><input id="appointment-starts" type="datetime-local" required>
+<label for="appointment-provider">Provider (optional)</label><input id="appointment-provider" maxlength="200">
+<label for="appointment-location">Location (optional)</label><input id="appointment-location" maxlength="300">
+<div class="feature-form-actions"><button class="primary-button" id="appointment-save" type="submit">Save appointment</button><button class="secondary-button" id="appointment-cancel" type="button">Cancel</button></div>
+<p id="appointment-form-status" role="status" aria-live="polite" hidden></p>
+</form>
+<div class="record-list" id="appointment-list" aria-live="polite"></div>
+</article>
+</section>
+<section class="view placeholder" id="relay" hidden>
+<h3>Caregiver Relay</h3>
+<article class="panel">
+<div class="panel-head"><div><h3>Care-circle follow-ups</h3><p class="muted">Shared only with members who have relay access.</p></div><button class="primary-button" id="relay-add" type="button" hidden>Add follow-up</button></div>
+<form class="feature-form" id="relay-form" hidden>
+<input id="relay-edit-id" type="hidden">
+<h4 id="relay-form-title">Add follow-up</h4>
+<div id="relay-circle-field"><label for="relay-circle">Care circle</label><select id="relay-circle" required></select></div>
+<label for="relay-title">Title</label><input id="relay-title" maxlength="160" required>
+<label for="relay-body">Details (optional)</label><textarea id="relay-body" maxlength="2000" rows="3"></textarea>
+<label for="relay-assignee">Assign to (optional)</label><select id="relay-assignee"></select>
+<label id="relay-status-field" for="relay-status" hidden>Status</label><select id="relay-status" hidden><option value="open">Open</option><option value="completed">Completed</option></select>
+<div class="feature-form-actions"><button class="primary-button" id="relay-save" type="submit">Save follow-up</button><button class="secondary-button" id="relay-cancel" type="button">Cancel</button></div>
+<p id="relay-form-status" role="status" aria-live="polite" hidden></p>
+</form>
+<div class="record-list" id="relay-list" aria-live="polite"></div>
+</article>
+</section>
+<section class="view placeholder" id="approvals" hidden>
+<h3>Elder Approvals</h3>
+<article class="panel">
+<div class="panel-head"><div><h3>Approval requests</h3><p class="muted">Only the elder who owns a care circle can approve or reject requests.</p></div></div>
+<form class="feature-form" id="approval-form" hidden>
+<h4>Request elder approval</h4>
+<label for="approval-circle">Care circle</label><select id="approval-circle" required></select>
+<label for="approval-type">Request type</label><select id="approval-type"><option value="medication">Medication</option><option value="appointment">Appointment</option><option value="other">Other</option></select>
+<div id="approval-medication-fields" hidden>
+<label for="approval-medication">Medication to change</label><select id="approval-medication"></select>
+<label for="approval-medication-name">Proposed name</label><input id="approval-medication-name" maxlength="120">
+<label for="approval-medication-dosage">Proposed dosage</label><input id="approval-medication-dosage" maxlength="100">
+<label for="approval-medication-frequency">Proposed frequency</label><input id="approval-medication-frequency" maxlength="120">
+<label for="approval-medication-start">Proposed start date</label><input id="approval-medication-start" type="date">
+<label for="approval-medication-end">Proposed end date (optional)</label><input id="approval-medication-end" type="date">
+<label for="approval-medication-instructions">Proposed instructions</label><textarea id="approval-medication-instructions" maxlength="2000" rows="3"></textarea>
+</div>
+<label for="approval-title">Request</label><input id="approval-title" maxlength="160" required>
+<label for="approval-details">Details</label><textarea id="approval-details" maxlength="2000" rows="3"></textarea>
+<button class="primary-button" type="submit">Submit request</button>
+<p id="approval-form-status" role="status" aria-live="polite" hidden></p>
+</form>
+<div class="record-list" id="approval-list" aria-live="polite"></div>
+</article>
+</section>
+<section class="view placeholder" id="timeline" hidden>
+<h3>Care timeline</h3>
+<article class="panel">
+<form class="feature-form" id="timeline-form" hidden>
+<h4>Record a care update</h4>
+<label for="timeline-circle">Care circle</label><select id="timeline-circle" required></select>
+<label for="timeline-description">Update</label><textarea id="timeline-description" maxlength="1000" required rows="3"></textarea>
+<button class="primary-button" type="submit">Add to timeline</button>
+<p id="timeline-form-status" role="status" aria-live="polite" hidden></p>
+</form>
+<div class="record-list" id="activity-list" aria-live="polite"></div>
+</article>
+</section>
+<section class="view placeholder" id="ai-summary" hidden>
+<h3>AI care summary</h3>
+<article class="panel"><p id="ai-summary-copy">Your summary will use only the records your account is authorized to access.</p><button class="primary-button" id="ai-summary-load" type="button">Generate summary</button><div id="ai-summary-result" aria-live="polite"></div><p class="note">CareLoop AI does not diagnose or prescribe. Gemini receives only a generic prompt; names and care records stay local.</p></article>
+</section>
+<section class="view placeholder" id="notifications" hidden>
+<h3>Notifications</h3>
+<article class="panel"><div class="record-list" id="notification-list" aria-live="polite"></div></article>
+</section>
+<footer>CareLoop AI · Care that never loses the connection. <span>Care coordination only · Not medical advice</span></footer>
+</main>
+</div>
+<script src="/static/js/app.js?v=ui-ux-1"></script>
+</body>
+</html>

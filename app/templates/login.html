@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172b4d">
+<title>{{ app_name }} | Sign in or join</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/css/style.css?v=ui-ux-1">
+<link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body class="auth-page">
+<main class="auth-card" aria-labelledby="login-title">
+<a class="auth-brand" href="/login" aria-label="CareLoop AI home">
+<span class="brand-icon" aria-hidden="true">+</span>
+<span><strong>CareLoop <span>AI</span></strong><small>Connected care, together</small></span>
+</a>
+<div class="auth-intro">
+<p class="eyebrow">YOUR CARE CIRCLE, CONNECTED</p>
+<h1 id="login-title">Welcome back</h1>
+<p>Sign in to your account, or join a care circle with an invitation.</p>
+</div>
+<form id="login-form">
+<label for="login-email">Email</label>
+<input id="login-email" name="email" type="email" maxlength="254"
+    autocomplete="username" required>
+<label for="login-password">Password</label>
+<input id="login-password" name="password" type="password" maxlength="256"
+    autocomplete="current-password" required>
+<p id="login-status" class="auth-status" role="alert" aria-live="polite" hidden></p>
+<button id="login-submit" class="primary-button auth-submit" type="submit">
+    Sign in
+</button>
+</form>
+<details class="auth-join">
+<summary>New to CareLoop AI? Join with an invitation</summary>
+<p class="auth-join-help">Your invitation code can only be used once. Add email and password now to sign in again later; you can also set them up after joining.</p>
+<form id="join-form">
+<label for="join-code">Join code</label>
+<input
+    id="join-code"
+    name="join_code"
+    type="text"
+    minlength="8"
+    maxlength="8"
+    pattern="[A-Za-z0-9]{8}"
+    autocapitalize="characters"
+    autocomplete="off"
+    spellcheck="false"
+    required
+    aria-describedby="join-help join-status"
+    placeholder="Enter your 8-character code">
+<label for="join-email">Email for future sign-in (optional)</label>
+<input id="join-email" name="email" type="email" maxlength="254"
+    autocomplete="email">
+<label for="join-password">Password for future sign-in (optional)</label>
+<input id="join-password" name="password" type="password" minlength="8"
+    maxlength="256" autocomplete="new-password">
+<small id="join-help">If you add a password, use at least 8 characters. Demo codes remain code-only.</small>
+<p id="join-status" class="auth-status" role="alert" aria-live="polite" hidden></p>
+<button id="join-submit" class="primary-button auth-submit" type="submit">
+    Join care circle
+</button>
+</form>
+</details>
+<p class="auth-footnote">Development demo authentication. Accounts and care records are not production-ready.</p>
+</main>
+<script src="/static/js/login.js" defer></script>
+</body>
+</html>

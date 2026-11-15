@@ -1,0 +1,229 @@
+:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#202b3c;background:#f5f7fb;--navy:#172b4d;--muted:#778397;--border:#e8edf4;--purple:#7063c8}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;min-width:320px;font-size:15px;line-height:1.5}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #e5a93d;outline-offset:3px}.skip-link{position:absolute;top:-60px;left:12px;background:white;padding:12px;z-index:10}.skip-link:focus{top:12px}
+.layout{display:flex;min-height:100vh;width:100%}.sidebar{position:fixed;inset:0 auto 0 0;width:250px;flex:0 0 250px;display:flex;flex-direction:column;padding:28px 18px 20px;color:white;background:var(--navy)}.brand{display:flex;align-items:center;gap:12px;padding:0 8px 30px}.brand-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:#7c72d4;font-size:29px;font-weight:700}.brand h1{margin:0;font-size:21px}.brand h1 span{color:#b9b2ff}.brand small,.profile small{display:block;color:#b5c1d5;font-size:11px}.profile{display:flex;align-items:center;gap:11px;padding:14px 10px;border-radius:12px;background:#ffffff14;margin-bottom:29px}.profile-details{flex:1;min-width:0}.avatar{width:39px;height:39px;display:grid;place-items:center;border-radius:50%;background:#e9e5ff;color:#5146a3;font-weight:700}.profile strong{display:block;overflow:hidden;font-size:13px;text-overflow:ellipsis}.logout-button{flex:0 0 auto;padding:5px;border:1px solid #64748b;border-radius:6px;color:#e6ebf4;background:transparent;font-size:10px}.logout-button:hover{background:#33476a}.logout-button:disabled{cursor:wait;opacity:.7}.nav-title{margin:0 10px 12px;color:#98a9c2;font-size:10px;letter-spacing:1.3px;font-weight:700}.sidebar nav{display:grid;gap:6px}.nav-link{width:100%;display:flex;align-items:center;gap:12px;border:0;border-radius:9px;padding:12px 11px;color:#d1daea;background:transparent;text-align:left;font-size:13px}.nav-link:hover,.nav-link.active{color:white;background:#33476a}.nav-link.active{box-shadow:inset 3px 0 #a69df5}.count{margin-left:auto;background:#e7a45d;color:#382a1a;border-radius:20px;padding:1px 8px;font-size:11px}.sidebar-bottom{margin-top:auto;padding:12px 10px;border:1px solid #415574;border-radius:9px;color:#e1e8f4;font-size:11px}.sidebar-bottom small{display:block;color:#91a2bb;margin-top:13px}
+#main{flex:1;min-width:0;width:calc(100% - 250px);margin-left:250px;padding:32px 38px 20px;max-width:none;}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:27px}.eyebrow{margin:0 0 5px;color:#8995a8;font-size:10px;font-weight:700;letter-spacing:1.2px}.topbar h2{margin:0;font-size:clamp(22px,2.5vw,29px)}.muted{color:var(--muted)}.topbar .muted{margin:5px 0 0;font-size:13px}.demo-label{padding:6px 10px;border-radius:20px;color:#82612c;background:#fff1d9;font-size:10px;font-weight:800;letter-spacing:.7px}
+.welcome{display:flex;align-items:center;justify-content:space-between;min-height:148px;padding:27px 33px;border-radius:15px;color:white;background:linear-gradient(110deg,#4f529e,#8177ce)}.welcome small{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#e0ddff}.welcome h2{margin:7px 0 5px;font-size:24px}.welcome p{margin:0;color:#e9e7ff;font-size:13px}.welcome-symbol{font-size:78px;opacity:.22;padding-right:24px}
+.section-title{margin:27px 0 15px}.section-title h3,.panel h3{margin:0;font-size:17px}.section-title p,.panel-head p{margin:3px 0 0;font-size:12px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.stat,.panel{background:white;border:1px solid var(--border);border-radius:13px}.stat{padding:17px;min-width:0}.stat-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:10px;font-size:17px}.purple{background:#efedff;color:#7164c8}.green{background:#e4f7ed;color:#33996c}.orange{background:#fff0e6;color:#d58a51}.blue{background:#e7f2ff;color:#5189c4}.stat>p{margin:12px 0 2px;color:var(--muted);font-size:11px}.stat h2{margin:0;font-size:25px}.stat h2 small{color:#8d98a8;font-size:14px}.stat>span:last-child{display:block;margin-top:5px;color:#8792a3;font-size:10px}
+.columns{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,1fr);gap:17px;margin-top:18px}.panel{padding:20px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:15px}.panel-head h3{font-size:15px}.panel-head p{font-size:11px}.text-link{border:0;padding:5px 0;background:transparent;color:#655bb9;font-weight:700;font-size:11px}.dose{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #f0f2f6}.medicine-icon{flex:0 0 36px;width:36px;height:36px;display:grid;place-items:center;border-radius:10px;color:#6e62bd;background:#f0efff}.dose-info{min-width:0;flex:1}.dose-info strong,.dose-info small{display:block}.dose-info strong{font-size:12px}.dose-info small{color:#778397;font-size:10px}.status{display:inline-block;flex-shrink:0;padding:5px 8px;border-radius:20px;font-size:9px;font-weight:700}.confirmed{background:#e6f7ed;color:#32845d}.attention{background:#fff0df;color:#a86625}.claimed{background:#eaeaff;color:#6258a9}.primary-button{border:0;border-radius:7px;padding:8px 10px;background:#625ab5;color:white;font-size:10px;font-weight:700}.primary-button:hover{background:#4c4599}.note{margin:12px 0 0;color:#929cac;font-size:10px}
+.date{display:flex;align-items:center;gap:12px;margin:20px 0}.date strong{color:#625ab5;font-size:35px;line-height:1}.date span{color:#8c96a7;font-size:10px;font-weight:800}.appointment h3{font-size:14px}.appointment>p{font-size:11px;color:#667287}.secondary-button{width:100%;margin-top:12px;padding:9px;border:1px solid #dedbf5;border-radius:7px;background:#f8f7ff;color:#625ab5;font-size:11px;font-weight:700}.relay-box{display:flex;align-items:center;gap:12px;padding:13px;border-radius:9px;background:#fff8ed}.relay-box>span{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:#ffedcf;color:#b8782c}.relay-box strong,.activity strong{font-size:11px}.relay-box p{margin:3px 0 0;color:#818b9b;font-size:10px}.caregiver{display:flex;align-items:center;gap:9px;padding:14px 0}.caregiver>div{flex:1}.caregiver strong,.caregiver small{display:block}.caregiver strong{font-size:11px}.caregiver small{color:#8792a2;font-size:10px}.activity{display:flex;align-items:flex-start;gap:11px;padding:10px 0}.activity i{width:9px;height:9px;margin-top:5px;flex-shrink:0;border-radius:50%;background:#55b88a}.activity:nth-child(3) i{background:#65a3db}.activity:nth-child(4) i{background:#8b7bd1}.activity strong,.activity small{display:block}.activity small{margin-top:2px;color:#8a95a5;font-size:10px}
+.placeholder h3{margin:0 0 15px}.placeholder .panel{min-height:150px}.placeholder .panel p{color:var(--muted);font-size:13px}.role-empty-state{margin:18px 0}.role-empty-state h3{margin:0 0 7px;font-size:15px}.role-empty-state p{margin:0;color:var(--muted);font-size:12px}#dashboard-status{padding:10px 13px;border:1px solid #efd6b6;border-radius:9px;color:#765421;background:#fff8ed;font-size:12px}footer{display:flex;justify-content:space-between;gap:10px;padding:24px 2px 5px;color:#98a2b0;font-size:10px}
+@media(max-width:1100px){.sidebar{width:215px;flex-basis:215px}#main{width:calc(100% - 215px);margin-left:215px;padding:25px 22px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.sidebar{position:static;width:100%;padding:15px}.brand{padding-bottom:15px}.profile{margin-bottom:14px}.nav-title,.sidebar-bottom{display:none}.sidebar nav{display:flex;overflow-x:auto;padding-bottom:5px}.nav-link{width:auto;flex-shrink:0;white-space:nowrap}.count{display:none}#main{margin-left:0;padding:20px 14px}.topbar{align-items:flex-start}.welcome{padding:22px}.welcome-symbol{font-size:50px;padding:0}.columns{grid-template-columns:1fr}footer{flex-direction:column}}
+@media(max-width:420px){.stats{gap:9px}.stat{padding:12px}.stat h2{font-size:21px}.dose{flex-wrap:wrap}}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{z-index:2;width:250px}
+#main{grid-column:2;flex:initial;width:auto;min-width:0;margin-left:0}
+.record-list{min-width:0}
+.record-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f6}
+.record-item:last-child{border-bottom:0}
+.record-item strong,.record-item small{display:block}
+.record-item strong{font-size:12px;overflow-wrap:anywhere}
+.record-item small,.empty-state{margin:3px 0 0;color:var(--muted);font-size:10px;overflow-wrap:anywhere}
+.record-context{text-align:right;max-width:45%}
+.invite-controls{margin-top:15px}
+#invite-form{display:grid;gap:8px;margin-top:12px}
+#invite-form>label,#invite-form legend{color:var(--navy);font-size:11px;font-weight:700}
+#invite-form input:not([type=checkbox]),#invite-form select{min-height:38px;padding:8px 10px;border:1px solid #cfd7e4;border-radius:7px;color:var(--navy);background:white;font:inherit}
+#invite-form fieldset{display:grid;gap:6px;margin:3px 0;padding:10px;border:1px solid var(--border);border-radius:8px}
+#invite-form fieldset label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}
+#invite-status{margin:0;padding:9px;border-radius:7px;background:#f2f0ff;color:#5146a3;font-size:12px;overflow-wrap:anywhere}
+@media(max-width:1100px){.layout{grid-template-columns:215px minmax(0,1fr)}.sidebar{width:215px}#main{grid-column:2;flex:initial;width:auto;margin-left:0}}
+@media(max-width:760px){.layout{grid-template-columns:minmax(0,1fr)}.sidebar{position:static;grid-column:1;width:100%;flex:initial}#main{grid-column:1;flex:initial;width:auto;margin-left:0}}
+
+.medication-panel>.panel-head{align-items:center}
+.medication-form{display:grid;gap:12px;margin:0 0 20px;padding:16px;border:1px solid var(--border);border-radius:10px;background:#fafaff}
+.medication-form h4{margin:0;color:var(--navy);font-size:14px}
+.medication-form label,.dose-create-form label,.dose-status-form label{display:grid;gap:5px;color:var(--navy);font-size:11px;font-weight:700}
+.medication-form input,.medication-form select,.medication-form textarea,.dose-create-form input,.dose-create-form select,.dose-status-form select{width:100%;min-height:38px;padding:8px 10px;border:1px solid #cfd7e4;border-radius:7px;color:var(--navy);background:white;font:inherit}
+.medication-form textarea{resize:vertical}
+.medication-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.medication-form-grid .wide{grid-column:1/-1}
+.medication-form-actions{display:flex;align-items:center;gap:10px}
+.medication-form-actions .secondary-button{width:auto;margin:0;padding:7px 12px}
+#medication-form-status{margin:0;padding:9px;border-radius:7px;color:#765421;background:#fff8ed;font-size:12px}
+.medication-card{padding:16px 0;border-bottom:1px solid var(--border)}
+.medication-card:last-child{border-bottom:0}
+.medication-card-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.medication-card h4{margin:0;color:var(--navy);font-size:14px}
+.medication-card-heading p,.medication-scope,.medication-dates,.medication-instructions{margin:4px 0 0;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.medication-actions{display:flex;gap:12px;flex-shrink:0}
+.danger-link{color:#a44949}
+.medication-card h5{margin:15px 0 7px;font-size:12px}
+.dose-history{display:grid;gap:8px}
+.dose-history-item{padding:10px;border:1px solid var(--border);border-radius:8px;background:#fcfcfe}
+.dose-history-summary{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dose-history-summary strong{font-size:11px}
+.dose-status{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.status-taken{color:#32845d;background:#e6f7ed}
+.status-missed{color:#a44949;background:#fdeaea}
+.status-pending{color:#8a672d;background:#fff3d8}
+.dose-change-list{margin:7px 0 0;padding-left:17px;color:var(--muted);font-size:10px}
+.dose-status-form,.dose-create-form{display:flex;align-items:flex-end;gap:9px;margin-top:9px}
+.dose-status-form label{flex:1}
+.dose-status-form .secondary-button,.dose-create-form .secondary-button{width:auto;flex-shrink:0;margin:0;padding:8px 11px}
+.dose-create-form{padding-top:10px;border-top:1px dashed var(--border)}
+.dose-create-form label{flex:1}
+.medication-card button:disabled{cursor:wait;opacity:.65}
+.medication-card :focus-visible,.medication-form :focus-visible{outline:3px solid #e5a93d;outline-offset:2px}
+@media(max-width:600px){.medication-form-grid{grid-template-columns:1fr}.medication-form-grid .wide{grid-column:auto}.dose-status-form,.dose-create-form{align-items:stretch;flex-direction:column}.dose-status-form .secondary-button,.dose-create-form .secondary-button{width:100%}.medication-actions{gap:7px}}
+
+.profile-editor{margin:14px 0;padding:12px 15px;border:1px solid var(--border);border-radius:10px;background:white}
+.profile-editor summary{color:#625ab5;font-size:12px;font-weight:700;cursor:pointer}
+.profile-editor form,.feature-form{display:grid;gap:9px}
+.profile-editor form{max-width:380px;margin-top:12px}
+.profile-editor label,.feature-form label{color:var(--navy);font-size:11px;font-weight:700}
+.profile-editor input,.feature-form input,.feature-form select,.feature-form textarea{width:100%;min-height:38px;padding:8px 10px;border:1px solid #cfd7e4;border-radius:7px;color:var(--navy);background:white;font:inherit}
+.feature-form{max-width:620px;margin:0 0 18px;padding:15px;border:1px solid var(--border);border-radius:10px;background:#fafaff}
+.feature-form h4{margin:0;color:var(--navy);font-size:14px}
+.feature-form textarea{resize:vertical}
+.feature-form-actions{display:flex;gap:10px;align-items:center}
+.feature-form-actions .secondary-button{width:auto;margin:0;padding:8px 12px}
+.feature-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.feature-form [role=status],.profile-editor [role=status]{margin:0;padding:8px;border-radius:7px;color:#765421;background:#fff8ed;font-size:11px}
+.record-context{overflow-wrap:anywhere}
+.nav-link .count[hidden]{display:none}
+select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #e5a93d;outline-offset:3px}
+@media(max-width:600px){.feature-form-actions{align-items:stretch;flex-direction:column}.feature-form-actions .secondary-button{width:100%}}
+
+/* CareLoop AI - unified dashboard layout */
+.layout {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    align-items: start;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    width: 250px;
+    height: 100vh;
+    z-index: 2;
+}
+
+#main {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 32px 38px 20px;
+    max-width: none;
+}
+
+@media (max-width: 1100px) {
+    .layout {
+        grid-template-columns: 215px minmax(0, 1fr);
+    }
+    .sidebar {
+        width: 215px;
+    }
+    #main {
+        grid-column: 2;
+        padding: 25px 22px;
+    }
+}
+
+@media (max-width: 760px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        grid-column: 1;
+    }
+    #main {
+        grid-column: 1;
+        width: 100%;
+        margin: 0;
+        padding: 20px 14px;
+    }
+}
+
+:root {
+    --muted: #657187;
+}
+
+.nav-link {
+    min-height: 44px;
+    font-size: 14px;
+}
+
+.logout-button {
+    min-height: 40px;
+    padding: 6px 9px;
+    font-size: 12px;
+}
+
+.brand small,
+.profile small,
+.nav-title,
+.stat > p,
+.stat > span:last-child,
+.record-item small,
+.empty-state,
+.dose-info small,
+footer {
+    font-size: 12px;
+}
+
+.record-item strong {
+    font-size: 14px;
+}
+
+.primary-button,
+.secondary-button {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 12px;
+}
+
+.text-link {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    padding: 7px 5px;
+    font-size: 12px;
+}
+
+.medication-form input:not([type="hidden"]),
+.medication-form select,
+.medication-form textarea,
+.feature-form input:not([type="hidden"]),
+.feature-form select,
+.feature-form textarea,
+.profile-editor input,
+#invite-form input:not([type="checkbox"]),
+#invite-form select {
+    min-height: 44px;
+}
+
+@media (max-width: 760px) {
+    .sidebar nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+    }
+
+    .nav-link {
+        width: 100%;
+        min-width: 0;
+        white-space: normal;
+    }
+
+    .count {
+        display: inline-flex;
+    }
+
+    .topbar > div {
+        min-width: 0;
+    }
+
+    .topbar h2 {
+        overflow-wrap: anywhere;
+    }
+}
+
