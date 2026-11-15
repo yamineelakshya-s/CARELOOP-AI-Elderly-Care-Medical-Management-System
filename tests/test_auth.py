@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 import sqlite3
 import time
 from types import SimpleNamespace
@@ -93,7 +94,7 @@ def test_invitation_code_can_only_be_redeemed_once_concurrently(client):
     assert sum(result is not None for result in results) == 1
 
 
-def test_demo_accounts_are_opt_in_and_have_no_seeded_health_records(client, monkeypatch):
+def test_demo_accounts_are_opt_in_and_share_lakshmi_demo_records(client, monkeypatch):
     monkeypatch.setattr(settings, "enable_demo_accounts", True)
     initialize_database()
 
@@ -106,7 +107,34 @@ def test_demo_accounts_are_opt_in_and_have_no_seeded_health_records(client, monk
     assert response.json()["user"]["is_demo"] is True
     dashboard = client.get("/api/dashboard").json()
     assert dashboard["profile"]["name"] == "Lakshmi"
-    assert dashboard["care_circles"][0]["medications"] == []
+    circle_id = dashboard["care_circles"][0]["id"]
+    assert {
+        (member["name"], member["role"])
+        for member in dashboard["care_circles"][0]["members"]
+    } == {
+        ("Lakshmi", "elder"),
+        ("Meena", "caregiver"),
+        ("Arjun", "family")
+    }
+    medications = client.get("/api/medications").json()
+    assert [item["name"] for item in medications["medications"]] == [
+        "DEMO: Sample medication"
+    ]
+    assert medications["medications"][0]["instructions"] == (
+        "Synthetic demo data; not medical advice."
+    )
+    appointments = client.get("/api/appointments").json()["appointments"]
+    assert [item["title"] for item in appointments] == [
+        "DEMO: Sample appointment"
+    ]
+    assert datetime.fromisoformat(
+        appointments[0]["starts_at"]
+    ) > datetime.now(timezone.utc)
+    dose = medications["medications"][0]["doses"][0]
+    assert dose["status"] == "Taken"
+    timeline = client.get("/api/timeline").json()
+    assert timeline["events"][0]["description"].startswith("DEMO:")
+    assert timeline["events"][0]["actor_name"] == "Meena"
 
     client.cookies.clear()
     meena = client.post(
@@ -114,7 +142,44 @@ def test_demo_accounts_are_opt_in_and_have_no_seeded_health_records(client, monk
         json={"join_code": "MEENA001"}
     )
     assert meena.status_code == 200
-    assert client.get("/api/dashboard").json()["care_circles"] == []
+    meena_dashboard = client.get("/api/dashboard").json()
+    assert meena_dashboard["care_circles"][0]["id"] == circle_id
+    assert meena_dashboard["care_circles"][0]["permissions"] == [
+        "activities_manage", "appointments", "medications"
+    ]
+    meena_medications = client.get("/api/medications").json()
+    assert len(meena_medications["medications"]) == 1
+    assert meena_medications["medications"][0]["can_manage"] is False
+    assert meena_medications["manageable_circles"] == []
+    assert client.get("/api/appointments").json()["appointments"][0][
+        "can_manage"
+    ] is False
+    meena_timeline = client.get("/api/timeline").json()
+    assert meena_timeline["events"][0]["description"].startswith("DEMO:")
+    assert len(meena_timeline["manageable_circles"]) == 1
+
+    client.cookies.clear()
+    arjun = client.post(
+        "/api/auth/join",
+        json={"join_code": "FAMILY01"}
+    )
+    assert arjun.status_code == 200
+    arjun_dashboard = client.get("/api/dashboard").json()
+    assert arjun_dashboard["profile"]["role"] == "family"
+    assert arjun_dashboard["care_circles"][0]["id"] == circle_id
+    assert arjun_dashboard["care_circles"][0]["permissions"] == [
+        "activities", "appointments", "medications"
+    ]
+    assert len(client.get("/api/medications").json()["medications"]) == 1
+    assert client.get("/api/medications").json()[
+        "manageable_circles"
+    ] == []
+    assert client.get("/api/appointments").json()["appointments"][0][
+        "title"
+    ] == "DEMO: Sample appointment"
+    arjun_timeline = client.get("/api/timeline").json()
+    assert arjun_timeline["events"][0]["description"].startswith("DEMO:")
+    assert arjun_timeline["manageable_circles"] == []
 
     monkeypatch.setattr(settings, "enable_demo_accounts", False)
     assert client.get("/api/auth/me").status_code == 401
@@ -140,6 +205,7 @@ def test_demo_accounts_are_seeded_on_startup_and_isolated_from_real_data(
         real_user = real_user_response.json()["user"]
         real_dashboard = client.get("/api/dashboard").json()
         assert len(real_dashboard["care_circles"]) == 1
+        circle_id = real_dashboard["care_circles"][0]["id"]
         medication_id = add_medication(
             real_user["id"],
             "Private real-user medication",
@@ -153,8 +219,8 @@ def test_demo_accounts_are_seeded_on_startup_and_isolated_from_real_data(
 
         expected_demo_accounts = (
             ("LAKSHMI1", "Lakshmi", "elder", 1),
-            ("MEENA001", "Meena", "caregiver", 0),
-            ("FAMILY01", "Arjun", "family", 0)
+            ("MEENA001", "Meena", "caregiver", 1),
+            ("FAMILY01", "Arjun", "family", 1)
         )
         for code, name, role, circle_count in expected_demo_accounts:
             client.cookies.clear()
@@ -166,14 +232,58 @@ def test_demo_accounts_are_seeded_on_startup_and_isolated_from_real_data(
             assert dashboard.json()["profile"]["name"] == name
             assert dashboard.json()["profile"]["role"] == role
             assert len(dashboard.json()["care_circles"]) == circle_count
-            assert client.get("/api/medications").json()["medications"] == []
-            assert client.get("/api/appointments").json()["appointments"] == []
+            if role == "elder":
+                demo_circle_id = dashboard.json()["care_circles"][0]["id"]
+            assert {
+                member["name"]
+                for member in dashboard.json()["care_circles"][0]["members"]
+            } == {"Lakshmi", "Meena", "Arjun"}
+            medications = client.get("/api/medications").json()
+            appointments = client.get("/api/appointments").json()
+            assert [
+                item["name"] for item in medications["medications"]
+            ] == ["DEMO: Sample medication"]
+            assert [
+                item["title"] for item in appointments["appointments"]
+            ] == ["DEMO: Sample appointment"]
+            assert medications["medications"][0]["doses"][0]["status"] == "Taken"
             assert client.get(
                 f"/api/medications/{medication_id}"
             ).status_code == 404
             assert client.get(
                 f"/api/appointments/{appointment_id}"
             ).status_code == 404
+            if role != "elder":
+                assert dashboard.json()["care_circles"][0]["permissions"] == [
+                    (
+                        "activities_manage" if role == "caregiver"
+                        else "activities"
+                    ),
+                    "appointments",
+                    "medications"
+                ]
+                assert medications["medications"][0]["can_manage"] is False
+                assert appointments["appointments"][0]["can_manage"] is False
+                denied_medication = client.post(
+                    "/api/medications",
+                    json={
+                        "care_circle_id": dashboard.json()["care_circles"][0]["id"],
+                        "name": "Unauthorized demo change",
+                        "dosage": "Demo only",
+                        "frequency": "Demo only",
+                        "start_date": "2026-01-01"
+                    }
+                )
+                assert denied_medication.status_code == 404
+                denied_appointment = client.post(
+                    "/api/appointments",
+                    json={
+                        "care_circle_id": dashboard.json()["care_circles"][0]["id"],
+                        "title": "Unauthorized demo change",
+                        "starts_at": "2030-01-02T10:00:00+00:00"
+                    }
+                )
+                assert denied_appointment.status_code == 404
 
         client.cookies.clear()
         assert client.post(
@@ -191,6 +301,34 @@ def test_demo_accounts_are_seeded_on_startup_and_isolated_from_real_data(
             ).fetchone()
 
     clear_rate_limit_state()
+
+    with TestClient(app) as restarted_client:
+        assert restarted_client.get("/healthz").status_code == 200
+        with connect() as connection:
+            assert connection.execute(
+                "SELECT COUNT(*) FROM care_circle_members WHERE care_circle_id = ?",
+                (demo_circle_id,)
+            ).fetchone()[0] == 2
+            assert connection.execute(
+                "SELECT COUNT(*) FROM medications WHERE id = ?",
+                ("demo-lakshmi-sample-medication",)
+            ).fetchone()[0] == 1
+            assert connection.execute(
+                "SELECT COUNT(*) FROM medication_doses WHERE id = ?",
+                ("demo-lakshmi-sample-dose",)
+            ).fetchone()[0] == 1
+            assert connection.execute(
+                "SELECT COUNT(*) FROM medication_dose_history WHERE id = ?",
+                ("demo-lakshmi-sample-dose-history",)
+            ).fetchone()[0] == 1
+            assert connection.execute(
+                "SELECT COUNT(*) FROM appointments WHERE id = ?",
+                ("demo-lakshmi-sample-appointment",)
+            ).fetchone()[0] == 1
+            assert connection.execute(
+                "SELECT COUNT(*) FROM care_activities WHERE id = ?",
+                ("demo-lakshmi-sample-activity",)
+            ).fetchone()[0] == 1
 
 
 def test_synthetic_demo_accounts_are_disabled_by_default(client):

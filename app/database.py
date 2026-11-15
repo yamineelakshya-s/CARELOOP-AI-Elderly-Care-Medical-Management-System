@@ -1,5 +1,7 @@
+import json
 import sqlite3
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterator
 
@@ -189,6 +191,10 @@ DEMO_ACCOUNTS = (
     ("demo-meena", "Meena", "caregiver", "MEENA001"),
     ("demo-arjun", "Arjun", "family", "FAMILY01"),
 )
+DEMO_MEMBER_PERMISSIONS = {
+    "demo-meena": ("activities_manage", "appointments", "medications"),
+    "demo-arjun": ("activities", "appointments", "medications")
+}
 
 
 @contextmanager
@@ -435,6 +441,16 @@ def _seed_demo_accounts(connection: sqlite3.Connection) -> None:
             """,
             (user_id, name, role, int(time.time()))
         )
+        user = connection.execute(
+            "SELECT is_demo, role FROM users WHERE id = ?",
+            (user_id,)
+        ).fetchone()
+        if (
+            user is None
+            or not user["is_demo"]
+            or user["role"] != role
+        ):
+            continue
         if role == "elder":
             connection.execute(
                 """
@@ -452,3 +468,166 @@ def _seed_demo_accounts(connection: sqlite3.Connection) -> None:
             "INSERT OR IGNORE INTO demo_codes (code_hash, user_id) VALUES (?, ?)",
             (code_hash, user_id)
         )
+
+    elder_id = "demo-lakshmi"
+    elder = connection.execute(
+        "SELECT is_demo FROM users WHERE id = ? AND role = 'elder'",
+        (elder_id,)
+    ).fetchone()
+    circle = connection.execute(
+        "SELECT id FROM care_circles WHERE owner_user_id = ?",
+        (elder_id,)
+    ).fetchone()
+    if elder is None or not elder["is_demo"] or circle is None:
+        return
+
+    now = datetime.now(timezone.utc)
+    now_timestamp = int(now.timestamp())
+    circle_id = circle["id"]
+    for member_id, expected_role in (
+        ("demo-meena", "caregiver"),
+        ("demo-arjun", "family")
+    ):
+        member = connection.execute(
+            "SELECT is_demo, role FROM users WHERE id = ?",
+            (member_id,)
+        ).fetchone()
+        if (
+            member is None
+            or not member["is_demo"]
+            or member["role"] != expected_role
+        ):
+            continue
+        permissions_json = json.dumps(
+            DEMO_MEMBER_PERMISSIONS[member_id]
+        )
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO care_circle_members (
+                care_circle_id, user_id, permissions_json, created_at
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (circle_id, member_id, permissions_json, now_timestamp)
+        )
+
+    medication_id = "demo-lakshmi-sample-medication"
+    connection.execute(
+        """
+        INSERT OR IGNORE INTO medications (
+            id, elder_user_id, name, dosage, frequency, start_date,
+            instructions, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            medication_id,
+            elder_id,
+            "DEMO: Sample medication",
+            "Synthetic sample only",
+            "Synthetic demo schedule",
+            now.date().isoformat(),
+            "Synthetic demo data; not medical advice.",
+            now_timestamp,
+            now_timestamp
+        )
+    )
+
+    dose_id = "demo-lakshmi-sample-dose"
+    dose_at = (now - timedelta(hours=1)).replace(
+        minute=0, second=0, microsecond=0
+    )
+    existing_dose = connection.execute(
+        "SELECT id FROM medication_doses WHERE id = ?",
+        (dose_id,)
+    ).fetchone()
+    if existing_dose is None:
+        connection.execute(
+            """
+            INSERT INTO medication_doses (
+                id, medication_id, scheduled_at, status,
+                updated_by_user_id, created_at, updated_at
+            ) VALUES (?, ?, ?, 'Taken', ?, ?, ?)
+            """,
+            (
+                dose_id,
+                medication_id,
+                dose_at.isoformat(),
+                elder_id,
+                now_timestamp,
+                now_timestamp
+            )
+        )
+        connection.execute(
+            """
+            INSERT INTO medication_dose_history (
+                id, dose_id, status, changed_by_user_id, changed_at
+            ) VALUES (?, ?, 'Taken', ?, ?)
+            """,
+            (
+                "demo-lakshmi-sample-dose-history",
+                dose_id,
+                elder_id,
+                now_timestamp
+            )
+        )
+
+    appointment_id = "demo-lakshmi-sample-appointment"
+    upcoming_at = (now + timedelta(days=7)).replace(
+        minute=0, second=0, microsecond=0
+    )
+    existing_appointment = connection.execute(
+        "SELECT starts_at FROM appointments WHERE id = ?",
+        (appointment_id,)
+    ).fetchone()
+    if existing_appointment is None:
+        connection.execute(
+            """
+            INSERT INTO appointments (
+                id, elder_user_id, title, provider, starts_at, location
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                appointment_id,
+                elder_id,
+                "DEMO: Sample appointment",
+                "Demo provider",
+                upcoming_at.isoformat(),
+                "Demo location"
+            )
+        )
+    else:
+        try:
+            existing_at = datetime.fromisoformat(existing_appointment["starts_at"])
+            if existing_at.tzinfo is None:
+                existing_at = existing_at.replace(tzinfo=timezone.utc)
+            else:
+                existing_at = existing_at.astimezone(timezone.utc)
+        except ValueError:
+            existing_at = datetime.min.replace(tzinfo=timezone.utc)
+        if existing_at <= now:
+            connection.execute(
+                "UPDATE appointments SET starts_at = ? WHERE id = ?",
+                (upcoming_at.isoformat(), appointment_id)
+            )
+
+    caregiver = connection.execute(
+        """
+        SELECT id FROM users
+        WHERE id = 'demo-meena' AND role = 'caregiver' AND is_demo = 1
+        """
+    ).fetchone()
+    activity_actor_id = caregiver["id"] if caregiver else elder_id
+    connection.execute(
+        """
+        INSERT OR IGNORE INTO care_activities (
+            id, elder_user_id, description, occurred_at, actor_user_id, event_type
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "demo-lakshmi-sample-activity",
+            elder_id,
+            "DEMO: Meena shared a sample care-circle update (synthetic only).",
+            now.isoformat(),
+            activity_actor_id,
+            "demo_seed"
+        )
+    )

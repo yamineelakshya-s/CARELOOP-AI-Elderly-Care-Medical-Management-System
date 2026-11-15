@@ -661,6 +661,169 @@ function renderTimeline() {
     });
 }
 
+function makePulseCard(icon, title, value, details, status) {
+    const card = document.createElement("article");
+    card.className = "pulse-card";
+
+    const heading = document.createElement("div");
+    heading.className = "pulse-card-heading";
+    const symbol = document.createElement("span");
+    symbol.className = "pulse-icon";
+    symbol.setAttribute("aria-hidden", "true");
+    symbol.textContent = icon;
+    const label = document.createElement("h4");
+    label.textContent = title;
+    heading.append(symbol, label);
+    card.appendChild(heading);
+
+    const summary = document.createElement("strong");
+    summary.className = "pulse-value";
+    summary.textContent = value;
+    card.appendChild(summary);
+
+    if (status) {
+        const indicator = document.createElement("span");
+        indicator.className = `pulse-status pulse-status-${status.toLowerCase()}`;
+        indicator.textContent = status;
+        card.appendChild(indicator);
+    }
+
+    const detail = document.createElement("p");
+    detail.className = "pulse-detail";
+    detail.textContent = details;
+    card.appendChild(detail);
+    return card;
+}
+
+function renderCareCirclePulse(circles) {
+    const pulse = document.getElementById("care-circle-pulse");
+    const cards = [];
+    const doseRecords = medicationData.medications.flatMap((medication) =>
+        (medication.doses || []).map((dose) => ({
+            ...dose,
+            medicationName: medication.name
+        }))
+    );
+    const now = Date.now();
+    const nextPendingDose = doseRecords
+        .filter((dose) =>
+            dose.status === "Pending"
+            && new Date(dose.scheduled_at).getTime() >= now
+        )
+        .sort((left, right) =>
+            new Date(left.scheduled_at) - new Date(right.scheduled_at)
+        )[0];
+    const latestDose = [...doseRecords].sort((left, right) =>
+        new Date(right.scheduled_at) - new Date(left.scheduled_at)
+    )[0];
+    const dose = nextPendingDose || latestDose;
+    const firstMedication = medicationData.medications[0];
+    cards.push(makePulseCard(
+        "✚",
+        "Medication status",
+        dose ? dose.medicationName : (
+            firstMedication ? "No dose recorded" : "No medication data"
+        ),
+        dose
+            ? `Scheduled ${formatDoseTime(dose.scheduled_at)}`
+            : (
+                firstMedication
+                    ? `${firstMedication.name} · No dose schedule is recorded.`
+                    : "No authorized medication records are available."
+            ),
+        dose ? dose.status : ""
+    ));
+
+    const nextAppointment = appointmentData.appointments
+        .filter((appointment) =>
+            new Date(appointment.starts_at).getTime() >= now
+        )
+        .sort((left, right) =>
+            new Date(left.starts_at) - new Date(right.starts_at)
+        )[0];
+    cards.push(makePulseCard(
+        "▣",
+        "Next appointment",
+        nextAppointment ? nextAppointment.title : "No upcoming appointment",
+        nextAppointment
+            ? `${formatDoseTime(nextAppointment.starts_at)}${nextAppointment.provider ? ` · ${nextAppointment.provider}` : ""}`
+            : "No upcoming appointment is available in your authorized records."
+    ));
+
+    const latestUpdate = timelineData.events.find((event) => event.actor_name);
+    cards.push(makePulseCard(
+        "◷",
+        "Latest care update",
+        latestUpdate
+            ? latestUpdate.description
+            : "No care update is available",
+        latestUpdate
+            ? `${latestUpdate.actor_name} · ${formatDoseTime(latestUpdate.occurred_at)}`
+            : "No authorized timeline updates are available."
+    ));
+
+    const connectedCircles = circles.filter((circle) =>
+        Number.isFinite(Number(circle.member_count))
+    );
+    const memberLinks = connectedCircles.reduce(
+        (total, circle) => total + Number(circle.member_count),
+        0
+    );
+    cards.push(makePulseCard(
+        "♧",
+        "Connected care circle",
+        connectedCircles.length
+            ? (
+                connectedCircles.length === 1
+                    ? `${memberLinks} member${memberLinks === 1 ? "" : "s"} connected`
+                    : `${memberLinks} member links`
+            )
+            : "No linked members",
+        connectedCircles.length
+            ? connectedCircles
+                .map((circle) => {
+                    const roster = (circle.members || [])
+                        .slice()
+                        .sort((left, right) => {
+                            const roleOrder = {
+                                elder: 0,
+                                caregiver: 1,
+                                family: 2
+                            };
+                            return roleOrder[left.role] - roleOrder[right.role];
+                        })
+                        .map((member) =>
+                            `${member.name} (${member.role[0].toUpperCase()}${member.role.slice(1)})`
+                        )
+                        .join(", ");
+                    return roster
+                        ? roster
+                        : `${circle.elder.name} · ${circle.member_count} connected`;
+                })
+                .join(" | ")
+            : "No care-circle membership is available to this account."
+    ));
+
+    const pendingApprovals = approvalData.requests.filter(
+        (request) => request.status === "pending"
+    ).length;
+    const activeRelayItems = relayData.items.filter(
+        (item) => !["resolved", "completed"].includes(item.status)
+    ).length;
+    const pendingActions = pendingApprovals + activeRelayItems;
+    cards.push(makePulseCard(
+        "!",
+        "Pending actions",
+        pendingActions
+            ? `${pendingActions} action${pendingActions === 1 ? "" : "s"}`
+            : "None found",
+        `${pendingApprovals} approval${pendingApprovals === 1 ? "" : "s"} · ${activeRelayItems} Relay follow-up${activeRelayItems === 1 ? "" : "s"} in records available to this account.`,
+        pendingActions ? "Pending" : "Clear"
+    ));
+
+    pulse.replaceChildren(...cards);
+}
+
 function renderDashboard(data, medications, appointments, relay, approvals, notifications, timeline) {
     statusMessage.hidden = true;
     updateProfile(data.profile);
@@ -719,6 +882,7 @@ function renderDashboard(data, medications, appointments, relay, approvals, noti
     renderNotifications();
     renderTimeline();
     renderAdherence(adherenceData);
+    renderCareCirclePulse(circles);
     renderList(
         "overview-appointment-list",
         appointmentItems.slice(0, 3),

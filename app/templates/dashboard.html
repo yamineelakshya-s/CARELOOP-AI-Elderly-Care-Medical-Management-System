@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CareLoop AI | Connected Care</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/css/style.css?v=ui-ux-1">
+<link rel="stylesheet" href="/static/css/style.css?v=care-circle-pulse-1">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -69,6 +69,12 @@
 <article class="stat"><span class="stat-icon orange">▣</span><p>Care circles</p><h2 id="circle-count">—</h2><span>Linked to your account</span></article>
 <article class="stat"><span class="stat-icon blue">♡</span><p>Care activities</p><h2 id="activity-count">—</h2><span>Authorized updates</span></article>
 </div>
+<article class="panel pulse-panel" aria-labelledby="care-circle-pulse-title">
+<div class="panel-head"><div><h3 id="care-circle-pulse-title">Care Circle Pulse</h3><p class="muted">A current snapshot of records you are allowed to see.</p></div><span class="pulse-mark" aria-hidden="true">●</span></div>
+<div class="pulse-grid" id="care-circle-pulse" aria-live="polite">
+<p class="empty-state">Loading your care-circle pulse…</p>
+</div>
+</article>
 <article class="panel">
 <div class="panel-head"><div><h3>Weekly medication adherence</h3><p class="muted">Calculated only from authorized dose records.</p></div></div>
 <label for="adherence-week">Choose a week</label>
@@ -227,6 +233,6 @@
 <footer>CareLoop AI · Care that never loses the connection. <span>Care coordination only · Not medical advice</span></footer>
 </main>
 </div>
-<script src="/static/js/app.js?v=ui-ux-1"></script>
+<script src="/static/js/app.js?v=care-circle-pulse-1"></script>
 </body>
 </html>

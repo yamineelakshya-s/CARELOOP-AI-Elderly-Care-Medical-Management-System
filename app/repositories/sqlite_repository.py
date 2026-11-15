@@ -449,6 +449,28 @@ def get_dashboard_for_user(user_id: str) -> dict | None:
                 "member_count": circle["member_count"],
                 "permissions": sorted(permissions)
             }
+            if user["is_demo"]:
+                owner = connection.execute(
+                    "SELECT is_demo FROM users WHERE id = ?",
+                    (circle["elder_id"],)
+                ).fetchone()
+                if owner is not None and owner["is_demo"]:
+                    members = connection.execute(
+                        """
+                        SELECT id, name, role
+                        FROM users
+                        WHERE id = ? AND is_demo = 1
+                        UNION
+                        SELECT users.id, users.name, users.role
+                        FROM care_circle_members
+                        JOIN users ON users.id = care_circle_members.user_id
+                        WHERE care_circle_members.care_circle_id = ?
+                          AND users.is_demo = 1
+                        ORDER BY role, name
+                        """,
+                        (circle["elder_id"], circle["circle_id"])
+                    ).fetchall()
+                    circle_data["members"] = [dict(member) for member in members]
             for table, permission in (
                 ("medications", "medications"),
                 ("appointments", "appointments"),
