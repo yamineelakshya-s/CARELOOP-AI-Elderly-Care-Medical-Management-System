@@ -33,8 +33,11 @@
 </button>
 </form>
 <details class="auth-join">
-<summary>New to CareLoop AI? Join with an invitation</summary>
-<p class="auth-join-help">Your invitation code can only be used once. Add email and password now to sign in again later; you can also set them up after joining.</p>
+<summary>New to CareLoop AI? Register with an invitation</summary>
+<p class="auth-join-help">Invitation codes can only be used once. Add email and password now to sign in again later; you can also set them up after joining.</p>
+{% if enable_demo_accounts %}
+<p class="auth-join-help">For this development demo, enter LAKSHMI1, MEENA001, or FAMILY01 in the join-code field below. Demo codes are reusable and are not email/password credentials.</p>
+{% endif %}
 <form id="join-form">
 <label for="join-code">Join code</label>
 <input

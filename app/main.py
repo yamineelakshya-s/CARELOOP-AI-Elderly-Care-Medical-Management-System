@@ -62,7 +62,10 @@ def login_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="login.html",
-        context={"app_name": settings.app_name}
+        context={
+            "app_name": settings.app_name,
+            "enable_demo_accounts": settings.enable_demo_accounts
+        }
     )
 
 

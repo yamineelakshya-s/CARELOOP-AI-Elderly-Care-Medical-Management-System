@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-from app.config import settings
+from app.config import PROJECT_ROOT, Settings, settings
 from app.database import connect, initialize_database
 from app.main import app
 from app.repositories.sqlite_repository import (
@@ -120,6 +120,79 @@ def test_demo_accounts_are_opt_in_and_have_no_seeded_health_records(client, monk
     assert client.get("/api/auth/me").status_code == 401
 
 
+def test_demo_accounts_are_seeded_on_startup_and_isolated_from_real_data(
+    tmp_path,
+    monkeypatch
+):
+    monkeypatch.setattr(settings, "database_path", str(tmp_path / "startup-demo.db"))
+    monkeypatch.setattr(settings, "enable_demo_accounts", True)
+    clear_rate_limit_state()
+
+    with TestClient(app) as client:
+        assert "LAKSHMI1" in client.get("/login").text
+
+        real_user_code = create_invitation("Real User", "elder")
+        real_user_response = client.post(
+            "/api/auth/join",
+            json={"join_code": real_user_code}
+        )
+        assert real_user_response.status_code == 200
+        real_user = real_user_response.json()["user"]
+        real_dashboard = client.get("/api/dashboard").json()
+        assert len(real_dashboard["care_circles"]) == 1
+        medication_id = add_medication(
+            real_user["id"],
+            "Private real-user medication",
+            dosage="1 tablet"
+        )
+        appointment_id = add_appointment(
+            real_user["id"],
+            "Private real-user appointment",
+            "2030-01-02T10:00:00+00:00"
+        )
+
+        expected_demo_accounts = (
+            ("LAKSHMI1", "Lakshmi", "elder", 1),
+            ("MEENA001", "Meena", "caregiver", 0),
+            ("FAMILY01", "Arjun", "family", 0)
+        )
+        for code, name, role, circle_count in expected_demo_accounts:
+            client.cookies.clear()
+            login = client.post("/api/auth/join", json={"join_code": code})
+            assert login.status_code == 200
+            assert login.json()["user"]["is_demo"] is True
+            dashboard = client.get("/api/dashboard")
+            assert dashboard.status_code == 200
+            assert dashboard.json()["profile"]["name"] == name
+            assert dashboard.json()["profile"]["role"] == role
+            assert len(dashboard.json()["care_circles"]) == circle_count
+            assert client.get("/api/medications").json()["medications"] == []
+            assert client.get("/api/appointments").json()["appointments"] == []
+            assert client.get(
+                f"/api/medications/{medication_id}"
+            ).status_code == 404
+            assert client.get(
+                f"/api/appointments/{appointment_id}"
+            ).status_code == 404
+
+        client.cookies.clear()
+        assert client.post(
+            "/api/auth/join",
+            json={"join_code": real_user_code}
+        ).status_code == 401
+        with connect() as connection:
+            assert connection.execute(
+                "SELECT 1 FROM medications WHERE id = ? AND elder_user_id = ?",
+                (medication_id, real_user["id"])
+            ).fetchone()
+            assert connection.execute(
+                "SELECT 1 FROM appointments WHERE id = ? AND elder_user_id = ?",
+                (appointment_id, real_user["id"])
+            ).fetchone()
+
+    clear_rate_limit_state()
+
+
 def test_synthetic_demo_accounts_are_disabled_by_default(client):
     response = client.post(
         "/api/auth/join",
@@ -128,6 +201,18 @@ def test_synthetic_demo_accounts_are_disabled_by_default(client):
 
     assert settings.enable_demo_accounts is False
     assert response.status_code == 401
+    assert "LAKSHMI1" not in client.get("/login").text
+
+
+def test_relative_database_path_is_anchored_to_project_root():
+    configured = Settings(
+        _env_file=None,
+        database_path="data/example.sqlite3"
+    )
+
+    assert configured.database_path == str(
+        PROJECT_ROOT / "data" / "example.sqlite3"
+    )
 
 
 def test_valid_join_returns_authenticated_profile(client):

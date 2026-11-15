@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 DEVELOPMENT_ONLY_SESSION_SECRET = "development-only-change-this-secret"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -24,7 +27,7 @@ class Settings(BaseSettings):
     )
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(PROJECT_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )
@@ -48,6 +51,16 @@ class Settings(BaseSettings):
     @classmethod
     def normalize_app_base_url(cls, value: str) -> str:
         return value.rstrip("/")
+
+    @field_validator("database_path", mode="after")
+    @classmethod
+    def resolve_database_path(cls, value: str) -> str:
+        if value == ":memory:":
+            return value
+        path = Path(value).expanduser()
+        if not path.is_absolute():
+            path = PROJECT_ROOT / path
+        return str(path.resolve())
 
     @model_validator(mode="after")
     def require_production_session_secret(self):
